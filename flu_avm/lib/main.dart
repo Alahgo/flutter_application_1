@@ -9,10 +9,21 @@ class MainApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        colorSchemeSeed: Colors.green
+      ),
       home: Scaffold(
+        appBar: AppBar(
+          title: Text("Este es el Home"),
+        ),
         body: Center(
-          child: Text('Hello World!'),
+          child: FilledButton(
+            onPressed: (){
+
+            },
+            child: Text("Hola mundo"))
         ),
       ),
     );
