@@ -10,7 +10,7 @@ final appRouter = GoRouter(
       builder: (context, state)=>const DomusScreen()
       ),
       GoRoute(path: '/numerato-river',
-      builder: (context, state)=>const NumeratorScreen()
+      builder: (context, state)=> const NumeratorScreen()
       )
      
   ]
