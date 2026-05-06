@@ -1,15 +1,20 @@
 import 'package:flu_avm/config/config.dart';
+import 'package:flu_avm/presentation/providers/providers.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-class BandsScreen extends StatelessWidget {
+class BandsScreen extends ConsumerWidget {
   const BandsScreen({super.key});
 
 
   
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+
+    final bands = ref.watch(bandsProvider);
+
     return Scaffold(
       appBar: AppBar(
         title: Text('Bandas de music'),
@@ -17,23 +22,24 @@ class BandsScreen extends StatelessWidget {
       body: ListView.builder(
         itemCount:bands.length,
         itemBuilder: (context, index) {
-          return _bandTile(bands[index]);
+          return _bandTile(context, ref, bands[index]);
         },
       ),
       floatingActionButton: FloatingActionButton(
         elevation: 1,
-        onPressed: () => addereNuvumBand(context),
+        onPressed: () => addereNuvumBand(context,ref),
         child: Icon(Icons.add),),
     );
   }
 
-  Widget _bandTile(Band band) {
+  Widget _bandTile(BuildContext context, WidgetRef ref, Band band) {
     return Dismissible(
       key: Key(band.id),
       direction: DismissDirection.startToEnd,
       onDismissed: (direction) {
-        print("Direction: $direction");
-        print(band.id);
+
+        ref.read(bandsProvider.notifier).delereBand(band);
+
       },
       background: Container(
         padding: EdgeInsets.only(left: 8),
@@ -50,13 +56,13 @@ class BandsScreen extends StatelessWidget {
             title: Text(band.nomen),
             trailing: Text('${band.numerusVotum}', style: TextStyle(fontSize: 20),),
             onTap: (){
-              print(band.nomen);
+              ref.read(bandsProvider.notifier).addereVotum(band);
             },
           ),
     );
   }
 
-  addereNuvumBand(BuildContext context){
+  addereNuvumBand(BuildContext context, WidgetRef ref){
 
     final textumController = TextEditingController();
 
@@ -95,7 +101,7 @@ class BandsScreen extends StatelessWidget {
         isDefaultAction: true,
         child: const Text('Add'),
         onPressed: () {
-          addereBandAdCollectione(context, textumController.text);
+          addereBandAdCollectione(context,ref, textumController.text);
           context.pop();
         },
       ),
@@ -109,8 +115,14 @@ class BandsScreen extends StatelessWidget {
 );
   }
 
-  void addereBandAdCollectione(BuildContext context, String nomen){
-    
+  void addereBandAdCollectione(BuildContext context,WidgetRef ref ,String nomen){
+    if(nomen.length > 1){
+      ref.read(bandsProvider.notifier).addereBand(Band(
+        id: DateTime.now().toString(),
+        nomen: nomen,
+        numerusVotum: 0
+      ));
+    }
   }
 
 }

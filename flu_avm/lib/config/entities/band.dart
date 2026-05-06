@@ -10,13 +10,13 @@ class Band{
 
   });
 
-
+  Band copyWith({String? id, String? nomen, int? numerusVotum}){
+    return Band(
+      id: id ?? this.id,
+      nomen: nomen ?? this.nomen,
+      numerusVotum: numerusVotum ?? this.numerusVotum
+    );
+  }
 
   
 }
-  List<Band> bands = [
-    Band(id: '1', nomen: 'Quien', numerusVotum: 4),
-    Band(id: '2', nomen: 'Bronzalica', numerusVotum: 2),
-    Band(id: '3', nomen: 'Bon Juani', numerusVotum: 8),
-    Band(id: '4', nomen: 'MILKA', numerusVotum: 1)
-  ];
