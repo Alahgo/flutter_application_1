@@ -27,17 +27,33 @@ class BandsScreen extends StatelessWidget {
     );
   }
 
-  ListTile _bandTile(Band band) {
-    return ListTile(
-          leading: CircleAvatar(
-            child: Text(band.nomen.substring(0,2).toUpperCase()),
+  Widget _bandTile(Band band) {
+    return Dismissible(
+      key: Key(band.id),
+      direction: DismissDirection.startToEnd,
+      onDismissed: (direction) {
+        print("Direction: $direction");
+        print(band.id);
+      },
+      background: Container(
+        padding: EdgeInsets.only(left: 8),
+        color: Colors.red,
+        child: Align(
+          alignment: Alignment.centerLeft,
+          child: Text("Delete band", style:  TextStyle(color: Colors.white),),
+        ),
+      ),
+      child: ListTile(
+            leading: CircleAvatar(
+              child: Text(band.nomen.substring(0,2).toUpperCase()),
+            ),
+            title: Text(band.nomen),
+            trailing: Text('${band.numerusVotum}', style: TextStyle(fontSize: 20),),
+            onTap: (){
+              print(band.nomen);
+            },
           ),
-          title: Text(band.nomen),
-          trailing: Text('${band.numerusVotum}', style: TextStyle(fontSize: 20),),
-          onTap: (){
-            print(band.nomen);
-          },
-        );
+    );
   }
 
   addereNuvumBand(BuildContext context){
@@ -94,8 +110,7 @@ class BandsScreen extends StatelessWidget {
   }
 
   void addereBandAdCollectione(BuildContext context, String nomen){
-    print(nomen);
-    context.pop();
+    
   }
 
 }
