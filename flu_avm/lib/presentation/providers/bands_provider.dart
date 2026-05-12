@@ -1,9 +1,38 @@
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:flu_avm/config/config.dart';
+import 'package:socket_io_client/socket_io_client.dart' as IO;
 
+
+
+enum ServerStatus{
+  Online, Offline, Connecting
+}
 final bandsProvider = StateNotifierProvider<BandsNotifier,List<Band>>((ref){
   return BandsNotifier();
 });
+
+class BandsState {
+  final ServerStatus serverStatus;
+  final IO.Socket socket;
+  final List<Band> bands;
+
+  BandsState({
+    required this.serverStatus,
+    required this.socket,
+    required this.bands
+  });
+
+  BandsState copyWith({
+    ServerStatus? serverStatus,
+    IO.Socket? socket,
+    List<Band>? bands 
+  }){
+    return BandsState(
+      serverStatus: serverStatus ?? this.serverStatus, 
+      socket: socket ?? this.socket, 
+      bands: bands ?? this.bands);
+  }
+}
 
 class BandsNotifier extends StateNotifier<List<Band>>{
   
