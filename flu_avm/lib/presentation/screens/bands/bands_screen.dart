@@ -14,28 +14,37 @@ class BandsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
 
-    final bands = ref.watch(bandsProvider);
+    final bandsState = ref.watch(bandsProvider);
+    final serverStatus = ref.watch(bandsProvider).serverStatus;
 
     return Scaffold(
       appBar: AppBar(
         title: Text('Bandas de music'),
+        actions: [
+          Container(
+            margin: const EdgeInsets.only(right: 10),
+            child: (serverStatus == ServerStatus.Online)
+            ? const Icon(Icons.check_circle, color: Colors.green,)
+            : const Icon(Icons.offline_bolt, color: Colors.red,),
+          )
+        ],
       ),
       body: Column(
         children: [
-          _videreData(bands),
+          _videreData(bandsState.bands),
           const SizedBox(height: 20,),
           Expanded(
             child: ListView.builder(
-              itemCount:bands.length,
+              itemCount:bandsState.bands.length,
               itemBuilder: (context, index) {
-                return _bandTile(context, ref, bands[index]);
+                return _bandTile(context, ref, bandsState.bands[index]);
               },
             ),
           ),
         ],
       ),
       floatingActionButton: Visibility(
-        visible: bands.length < 7 ? true : false,
+        visible: bandsState.bands.length < 7 ? true : false,
         child: FloatingActionButton(
           elevation: 1,
           onPressed: () => addereNuvumBand(context,ref),
@@ -96,7 +105,7 @@ class BandsScreen extends ConsumerWidget {
       direction: DismissDirection.startToEnd,
       onDismissed: (direction) {
 
-        ref.read(bandsProvider.notifier).delereBand(band);
+        ref.read(bandsProvider.notifier).delereBand(band.id);
 
       },
       background: Container(
@@ -114,7 +123,7 @@ class BandsScreen extends ConsumerWidget {
             title: Text(band.nomen),
             trailing: Text('${band.numerusVotum}', style: TextStyle(fontSize: 20),),
             onTap: (){
-              ref.read(bandsProvider.notifier).addereVotum(band);
+              ref.read(bandsProvider.notifier).addereVotum(band.id);
             },
           ),
     );
@@ -159,7 +168,7 @@ class BandsScreen extends ConsumerWidget {
         isDefaultAction: true,
         child: const Text('Add'),
         onPressed: () {
-          addereBandAdCollectione(context,ref, textumController.text);
+          ref.read(bandsProvider.notifier).addereBand(textumController.text);
           context.pop();
         },
       ),
@@ -171,16 +180,6 @@ class BandsScreen extends ConsumerWidget {
     ],
   ),
 );
-  }
-
-  void addereBandAdCollectione(BuildContext context,WidgetRef ref ,String nomen){
-    if(nomen.length > 1){
-      ref.read(bandsProvider.notifier).addereBand(Band(
-        id: DateTime.now().toString(),
-        nomen: nomen,
-        numerusVotum: 0
-      ));
-    }
   }
 
 }
