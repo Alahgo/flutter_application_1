@@ -29,3 +29,5 @@ doc/api/
 
 # Ignorar archivo de entorno si tienes claves privadas
 .env
+
+.lib/config/secret.dart
