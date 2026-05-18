@@ -13,6 +13,9 @@ final appRouter = GoRouter(
       ),
       GoRoute(path: '/bands',
       builder: (context, state)=> const BandsScreen()
+      ),
+      GoRoute(path: '/charta',
+      builder: (context, state)=> const ChartaScreen()
       )
   ]
 );
