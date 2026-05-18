@@ -121,7 +121,7 @@ class ComplereForm extends ConsumerWidget {
 
     if(nameValue.isEmpty) return;
  
-    //TODO poner el marcador en el mapa
+    ref.read(markerPositumProvider.notifier).state = true;
 
     // ignore: avoid_print
     print('Nombre: $nameValue, Color: $colorValue');
