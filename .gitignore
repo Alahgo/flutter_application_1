@@ -31,3 +31,4 @@ doc/api/
 .env
 
 .lib/config/secret.dart
+flu_avm/lib/config/secret.dart
