@@ -15,6 +15,8 @@ class ChartaScreen extends ConsumerStatefulWidget{
 class _ChartaScreenState extends ConsumerState<ChartaScreen> {
 
   CircleAnnotationManager? _circleAnnotationManager;
+
+  Cancelable? _dragCancelable;
   
 
   void _initializeCiecleAnnotations(MapboxMap mapBoxMap){
@@ -26,10 +28,29 @@ class _ChartaScreenState extends ConsumerState<ChartaScreen> {
     });
   }
 
+  void _setupDragListener(CircleAnnotationManager manager){
+    _dragCancelable?.cancel();
+
+    _dragCancelable = manager.dragEvents(
+      onChanged: (CircleAnnotation annotation) {
+      final pos = annotation.geometry.coordinates;
+      ref.read(coordsMarkerProvider.notifier).state = pos;
+    },
+      onEnd: (CircleAnnotation annotation) {
+      final pos = annotation.geometry.coordinates;
+      ref.read(coordsMarkerProvider.notifier).state = pos;
+    }
+  );
+  }
+
   Future<void> _addVelRenovareMarker() async{
     final manager = _circleAnnotationManager;
 
     if(manager == null) return;
+
+    await manager.deleteAll();
+
+     _setupDragListener(manager);
 
     final placed = ref.read(markerPositumProvider);
 
@@ -38,7 +59,7 @@ class _ChartaScreenState extends ConsumerState<ChartaScreen> {
       return;
     }
 
-    final situs = Position(-122.467895, 37.800126);
+    final situs = ref.read(coordsMarkerProvider);
     final color = ref.read(formColorProvider);
 
     final optiones = CircleAnnotationOptions(
@@ -56,6 +77,14 @@ class _ChartaScreenState extends ConsumerState<ChartaScreen> {
         debugPrint('Error al crear el marcador: $e');
       }
   }
+
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    _dragCancelable?.cancel();
+    super.dispose();
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -76,20 +105,26 @@ class _ChartaScreenState extends ConsumerState<ChartaScreen> {
             key: const ValueKey('main_mapa'),
             cameraOptions: CameraOptions(
               center: Point(
-                coordinates: Position(-122.467895, 37.800126
-                ),
+                coordinates: initialisMarkerPosition,
               ),
               zoom: 14.5,
             ),
             styleUri: MapboxStyles.MAPBOX_STREETS,
             onMapCreated: _initializeCiecleAnnotations
           ),
-          const Align(
-            alignment: Alignment.topRight,
-            child: Padding(padding: EdgeInsets.all(8.0),
-            child: ComplereForm(),
-            ),
-          ),
+          Align(
+          alignment: Alignment.topRight,
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: ref.watch(markerPositumProvider)
+            ? InformaUsoris(
+            nomen: ref.watch(formNomenProvider),
+            color: ref.watch(formColorProvider),
+            positio: ref.watch(coordsMarkerProvider),
+          ) // InformaUsoris
+        : const ComplereForm(),
+            ), // Padding
+          ) // Align
         ],
       ),
     );
