@@ -35,4 +35,10 @@ class ChartaService{
 
     _socket!.connect();
   }
+
+  void finire(){
+    _socket!.disconnect();
+    _socket?.dispose();
+    _socket = null;
+  }
 }
