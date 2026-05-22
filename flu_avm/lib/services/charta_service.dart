@@ -19,13 +19,17 @@ class ChartaService{
 
   late final StreamController<List<Usor>> _usoresController;
 
+  Stream<List<Usor>> get usoresStream => _usoresController.stream;
+
+  String? get meusSocketId => _socket?.id;
+
   ChartaService(){
     _usoresController = StreamController<List<Usor>>.broadcast();
   }
 
   void conectare(){
     _socket = IO.io(
-      'http://172.16.17.8:3200',
+      'http://192.168.68.57:3200',
       IO.OptionBuilder()
         .setTransports(['websocket'])
         .enableAutoConnect()
@@ -80,6 +84,27 @@ class ChartaService{
   void _usoresListenerRenovare(){
     _usoresController.add(List.from(_usores.values));
   }
+
+  void mittereUsor({
+    required String nomen,
+    required String colorHex,
+    required Position positio
+  }){
+    _socket!.emit('CLIENT_REGISTER', {
+      'nomen': nomen,
+      'color': colorHex,
+      'lng': positio.lng,
+      'lat': positio.lat
+    });
+  }
+  
+  void miterePositio(Position positio){
+    _socket!.emit('CLIENT_MOVE', {
+      'lng': positio.lng,
+      'lat': positio.lat
+    });
+  }
+  
 
   void finire(){
     _socket!.disconnect();
