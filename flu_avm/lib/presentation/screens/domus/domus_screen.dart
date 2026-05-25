@@ -33,7 +33,19 @@ class DomusScreen extends ConsumerWidget {
         )
       ],
     ),
-    body: _DomusView(),
+    body: Column(
+      children: [
+        Image.asset(
+          "assets/images/valencia.jpg",
+          //height: 170,
+          width: double.infinity,
+          fit: BoxFit.contain,
+          ),
+        Expanded(
+          child: _DomusView()
+          ),
+      ],
+    ),
   );
   }
 }
