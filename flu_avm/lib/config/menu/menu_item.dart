@@ -35,5 +35,10 @@ const appMenuItems = <MenuItem>[
     link: '/request',
     icon: Icons.catching_pokemon),
 
+    MenuItem(titulus: 'Tres en Raya login',
+    subtitulus: 'Solicitud para jugar al tres en raya',
+    link: '/login',
+    icon: Icons.gamepad_outlined),
+
 
 ];
