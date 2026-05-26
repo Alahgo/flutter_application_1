@@ -35,3 +35,8 @@ flutter:
 
   assets:
     - assets/images/
+    - assets/images/movil.png
+    - assets/images/puntos.png
+    - assets/images/servidor.png
+    - assets/images/mapa.jpg
+    - assets/images/votaciones.jpg
