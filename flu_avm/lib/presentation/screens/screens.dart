@@ -6,3 +6,4 @@ export './pokemons/pokemons_screen.dart';
 export './pokemons/pokemon_screen.dart';
 export './welcome/welcome_screen.dart';
 export './logIn/logIn_screen.dart';
+export './game/game_screen.dart';

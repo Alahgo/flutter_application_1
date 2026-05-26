@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../../providers/logIn_provider.dart';
+import 'package:go_router/go_router.dart';
+import '../../providers/providers.dart';
 
 class LoginScreen extends ConsumerWidget {
   const LoginScreen({super.key});
@@ -15,13 +15,13 @@ class LoginScreen extends ConsumerWidget {
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
-          child: _inputUsu(ref),
+          child: _inputUsu(context, ref),
         ),
       ),
     );
   }
 
-  Widget _inputUsu(WidgetRef ref) {
+  Widget _inputUsu(BuildContext context, WidgetRef ref) {
     final bool usuarioLogeado = ref.watch(usuarioLogeadoProvider);
 
     return Column(
@@ -47,6 +47,14 @@ class LoginScreen extends ConsumerWidget {
             _botonDesactivable(ref, 2, usuarioLogeado),
           ],
         ),
+        FilledButton(
+          
+          onPressed: usuarioLogeado ? () {
+            context.push('/game');
+          } : null,
+
+          child: const Text("Conectarse"),
+        ),
       ],
     );
   }
@@ -67,7 +75,7 @@ class LoginScreen extends ConsumerWidget {
               }
             }
           : null,
-      child: tipoBtn == 1 ? const Text("Registrar") : const Text("Desconectar"),
+      child: tipoBtn == 1 ? const Text("Registrar") : const Text("Desregistrar"),
     );
   }
 

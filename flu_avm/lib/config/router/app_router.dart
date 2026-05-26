@@ -38,5 +38,9 @@ final appRouter = GoRouter(
       path: "/login",
       builder: (context, state)=>const LoginScreen()
       ),
+       GoRoute(
+      path: "/game",
+      builder: (context, state)=>const GameScreen()
+      ),
   ]
 );
