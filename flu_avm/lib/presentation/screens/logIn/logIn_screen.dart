@@ -1,6 +1,8 @@
+import 'package:flu_avm/presentation/providers/logIn_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../config/config.dart';
 import '../../providers/providers.dart';
 
 class LoginScreen extends ConsumerWidget {
@@ -29,8 +31,7 @@ class LoginScreen extends ConsumerWidget {
       children: [
         TextField(
           enabled: !usuarioLogeado,
-          // En lugar de usar un controller y un listener problemáticos, 
-          // actualizamos el provider directamente cada vez que el usuario escribe
+       
           onChanged: (texto) {
             ref.read(usuarioActualProvider.notifier).state = texto;
           },
@@ -81,44 +82,37 @@ class LoginScreen extends ConsumerWidget {
 
   void _addusuario(WidgetRef ref) {
 
-    final List<String> usuarios = ref.read(usuariosProvider);
-    final String? usuarioActual = ref.read(usuarioActualProvider);
-   
-    if (usuarioActual != null && usuarioActual.isNotEmpty && !usuarios.contains(usuarioActual)) {
-     
-      final nuevaLista = [...usuarios, usuarioActual];
+  final String? usuarioActual = ref.read(usuarioActualProvider);
+  final serverState = ref.read(loginProvider);
+  final Partida? partidaActual = serverState.partida;
 
-      ref.read(usuariosProvider.notifier).state = nuevaLista;
-      ref.read(usuarioLogeadoProvider.notifier).state = true;
-      print('--- Lista de Usuarios Actualizada (Registro) ---');
-      for (var u in nuevaLista) {
-        print(u);
-      }
-    }
+ 
+  if (usuarioActual != null && 
+      usuarioActual.isNotEmpty && 
+      partidaActual?.player1 != usuarioActual &&
+      partidaActual?.player2 != usuarioActual) {
+
+    ref.read(loginProvider.notifier).unirseALaPartida(usuarioActual);
+    
+    print('Enviando usuario al servidor: $usuarioActual');
+    
+
+    }   
   }
+  
 
   void _removeUsuario(WidgetRef ref) {
    
-    final List<String> usuarios = ref.read(usuariosProvider);
     final String? usuarioActual = ref.read(usuarioActualProvider);
+    final serverState = ref.read(loginProvider);
+    final Partida? partidaActual = serverState.partida;
    
     
-    if (usuarioActual != null && usuarios.contains(usuarioActual)) {
+    if (usuarioActual != null &&
+        partidaActual?.player1 == usuarioActual|| 
+        partidaActual?.player2 == usuarioActual) {
 
-      final nuevaLista = usuarios.where((u) => u != usuarioActual).toList();
-
-      ref.read(usuariosProvider.notifier).state = nuevaLista;
-      ref.read(usuarioActualProvider.notifier).state = '';
-      ref.read(usuarioLogeadoProvider.notifier).state = false;
-
-      print('--- Lista de Usuarios Actualizada (Desconexión) ---');
-      if (nuevaLista.isEmpty) {
-        print('(No hay usuarios registrados)');
-      } else {
-        for (var u in nuevaLista) {
-          print(u);
-        }
-      }
+      ref.read(loginProvider.notifier).salirDeLaPartida(usuarioActual!);
       
     }
    

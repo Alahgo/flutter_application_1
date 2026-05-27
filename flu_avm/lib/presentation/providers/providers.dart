@@ -4,4 +4,4 @@ export './bands_provider.dart';
 export './charta_provider.dart';
 export 'pokemon_index_providers.dart';
 export 'pokemon_provider.dart';
-export 'login_provider.dart';
+export './logIn_provider.dart';

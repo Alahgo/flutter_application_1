@@ -6,3 +6,5 @@ export './helpers/coloris_forma.dart';
 export './secret.dart';
 export './entities/usor.dart';
 export './entities/pokemon.dart';
+export './entities/partida.dart';
+export './entities/serverState.dart';

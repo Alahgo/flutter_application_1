@@ -1,101 +1,76 @@
+import 'package:flu_avm/presentation/providers/logIn_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
+import '../../../config/config.dart';
 
-class GameScreen extends StatefulWidget {
+
+
+class GameScreen extends ConsumerWidget {
   const GameScreen({super.key});
 
   @override
-  State<GameScreen> createState() => _GameScreenState();
-}
-
-class _GameScreenState extends State<GameScreen> {
- 
-  List<String> _tablero = List.filled(9, '');
-  
-
-  bool _turnoDeX = true;
-  
-  
-  String _mensajeEstado = 'Turno de: X';
-  bool _juegoTerminado = false;
-
-  
-  void _jugarCasilla(int index) {
-    
-    if (_tablero[index].isNotEmpty || _juegoTerminado) return;
-
-    setState(() {
-      
-      _tablero[index] = _turnoDeX ? 'X' : 'O';
-      
-     
-      if (_comprobarGanador()) {
-        _mensajeEstado = 'Ganador: ${_tablero[index]}';
-        _juegoTerminado = true;
-      } 
-    
-      else if (!_tablero.contains('')) {
-        _mensajeEstado = 'Empate';
-        _juegoTerminado = true;
-      } 
-    
-      else {
-        _turnoDeX = !_turnoDeX;
-        _mensajeEstado = 'Turno de: ${_turnoDeX ? 'X' : 'O'}';
-      }
-    });
-  }
-
- 
-  bool _comprobarGanador() {
-    const combinacionesGanadoras = [
-      [0, 1, 2], [3, 4, 5], [6, 7, 8], 
-      [0, 3, 6], [1, 4, 7], [2, 5, 8], 
-      [0, 4, 8], [2, 4, 6]             
-    ];
-
-    for (var combo in combinacionesGanadoras) {
-      if (_tablero[combo[0]].isNotEmpty &&
-          _tablero[combo[0]] == _tablero[combo[1]] &&
-          _tablero[combo[0]] == _tablero[combo[2]]) {
-        return true;
-      }
-    }
-    return false;
-  }
-
- 
-  void _reiniciarJuego() {
-    setState(() {
-      _tablero = List.filled(9, '');
-      _turnoDeX = true;
-      _mensajeEstado = 'Turno de: X';
-      _juegoTerminado = false;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
+    
+    // 1. Escuchamos el estado completo del socket desde el loginProvider
+    final serverState = ref.watch(loginProvider);
+
+    // 2. Control de estados de la conexión antes de pintar el juego
+    if (!serverState.isConnected) {
+      return const Scaffold(
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CircularProgressIndicator(),
+              SizedBox(height: 16),
+              Text('Conectando al servidor Bun...', style: TextStyle(fontSize: 16)),
+            ],
+          ),
+        ),
+      );
+    }
+
+    final Partida? partida = serverState.partida;
+
+    if (partida == null) {
+      return const Scaffold(
+        body: Center(
+          child: Text('Esperando sincronización de la partida...'),
+        ),
+      );
+    }
+
+    // 3. Generamos el mensaje de estado dinámicamente según lo que mande el server
+    String mensajeEstado = '';
+    if (partida.hayGanador) {
+      mensajeEstado = '¡Tenemos un ganador!';
+    } else if (!partida.tablero.contains('')) {
+      dynamic mensajeEstado = 'Empate';
+    } else {
+      mensajeEstado = 'Turno de: ${partida.turnodeX ? "X" : "O"}';
+    }
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Tres en Raya'),
+        title: Text('${partida.player1} VS ${partida.player2.isEmpty ? "Esperando rival..." : partida.player2}'),
         centerTitle: true,
       ),
       body: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // Texto informativo del estado de la partida
+          // Texto informativo del estado de la partida en el servidor
           Text(
-            _mensajeEstado,
+            mensajeEstado,
             style: theme.textTheme.headlineMedium?.copyWith(
               fontWeight: FontWeight.bold,
-              color: _mensajeEstado.contains('Ganador') ? Colors.green : theme.colorScheme.onSurface,
+              color: partida.hayGanador ? Colors.green : theme.colorScheme.onSurface,
             ),
           ),
           const SizedBox(height: 30),
           
-       //TABLERO DE JUEGO
+          // TABLERO DE JUEGO ONLINE
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 32.0),
             child: AspectRatio(
@@ -109,10 +84,15 @@ class _GameScreenState extends State<GameScreen> {
                   mainAxisSpacing: 8.0,     
                 ),
                 itemBuilder: (context, index) {
-                  final String ficha = _tablero[index];
+                  final String ficha = partida.tablero[index];
                   
                   return GestureDetector(
-                    onTap: () => _jugarCasilla(index),
+                    // Al pulsar mandamos la casilla al server usando el notifier
+                    onTap: () {
+                      if (ficha.isEmpty && !partida.hayGanador) {
+                        ref.read(loginProvider.notifier).ponerFicha(index);
+                      }
+                    },
                     child: Container(
                       decoration: BoxDecoration(
                         color: theme.colorScheme.surfaceContainerHighest,
@@ -142,9 +122,11 @@ class _GameScreenState extends State<GameScreen> {
           ),
           const SizedBox(height: 40),
           
-
+          // BOTÓN REINICIAR (Avisa al servidor para limpiar el singleton global)
           FilledButton.icon(
-            onPressed: _reiniciarJuego,
+            onPressed: () {
+              ref.read(loginProvider.notifier).reiniciarPartida();
+            },
             icon: const Icon(Icons.refresh),
             label: const Text('Reiniciar Juego'),
             style: FilledButton.styleFrom(
