@@ -92,10 +92,7 @@ class LoginScreen extends ConsumerWidget {
       partidaActual?.player1 != usuarioActual &&
       partidaActual?.player2 != usuarioActual) {
 
-    ref.read(loginProvider.notifier).unirseALaPartida(usuarioActual);
-    
-    print('Enviando usuario al servidor: $usuarioActual');
-    
+      ref.read(loginProvider.notifier).unirseALaPartida(usuarioActual);
 
     }   
   }

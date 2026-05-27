@@ -4,8 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import '../../../config/config.dart';
 
-
-
 class GameScreen extends ConsumerWidget {
   const GameScreen({super.key});
 
@@ -13,10 +11,8 @@ class GameScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     
-    // 1. Escuchamos el estado completo del socket desde el loginProvider
     final serverState = ref.watch(loginProvider);
 
-    // 2. Control de estados de la conexión antes de pintar el juego
     if (!serverState.isConnected) {
       return const Scaffold(
         body: Center(
@@ -42,25 +38,51 @@ class GameScreen extends ConsumerWidget {
       );
     }
 
-    // 3. Generamos el mensaje de estado dinámicamente según lo que mande el server
+ 
+    if (partida.player1.isEmpty || partida.player2.isEmpty) {
+      return Scaffold(
+        appBar: AppBar(
+          title: Text('Hola, ${partida.player1.isNotEmpty ? partida.player1 : "Jugador"}'),
+          centerTitle: true,
+          automaticallyImplyLeading: false, 
+        ),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const CircularProgressIndicator(),
+              const SizedBox(height: 24),
+              const Text(
+                'Esperando a que se conecte un rival...'
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Código de partida: ${partida.id}',
+                style: TextStyle(color: theme.colorScheme.outline),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     String mensajeEstado = '';
     if (partida.hayGanador) {
       mensajeEstado = '¡Tenemos un ganador!';
     } else if (!partida.tablero.contains('')) {
-      dynamic mensajeEstado = 'Empate';
+      mensajeEstado = 'Empate';
     } else {
       mensajeEstado = 'Turno de: ${partida.turnodeX ? "X" : "O"}';
     }
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('${partida.player1} VS ${partida.player2.isEmpty ? "Esperando rival..." : partida.player2}'),
+        title: Text('${partida.player1} VS ${partida.player2}'),
         centerTitle: true,
       ),
       body: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // Texto informativo del estado de la partida en el servidor
           Text(
             mensajeEstado,
             style: theme.textTheme.headlineMedium?.copyWith(
@@ -70,7 +92,7 @@ class GameScreen extends ConsumerWidget {
           ),
           const SizedBox(height: 30),
           
-          // TABLERO DE JUEGO ONLINE
+          // TABLERO DE JUEGO ONLINE CON BUN SERVER BACKEND
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 32.0),
             child: AspectRatio(
@@ -87,10 +109,27 @@ class GameScreen extends ConsumerWidget {
                   final String ficha = partida.tablero[index];
                   
                   return GestureDetector(
-                    // Al pulsar mandamos la casilla al server usando el notifier
                     onTap: () {
-                      if (ficha.isEmpty && !partida.hayGanador) {
-                        ref.read(loginProvider.notifier).ponerFicha(index);
+
+                      //CONTROL DE TURNOS
+                      //Simplemente no dejo poner fichas en el turno que no toca en relación al 
+                      //player actual siendo player1 las X
+                      //y player2 las O
+                      if (ficha.isEmpty &&
+                       !partida.hayGanador ) {
+                        
+                        if(ref.read(usuarioActualProvider) ==  partida.player1 &&
+                          partida.turnodeX){
+
+                             ref.read(loginProvider.notifier).ponerFicha(index);
+
+                        }else if(ref.read(usuarioActualProvider) ==  partida.player2 &&
+
+                          !partida.turnodeX){
+                           ref.read(loginProvider.notifier).ponerFicha(index);
+
+                        }
+                       
                       }
                     },
                     child: Container(
@@ -122,7 +161,6 @@ class GameScreen extends ConsumerWidget {
           ),
           const SizedBox(height: 40),
           
-          // BOTÓN REINICIAR (Avisa al servidor para limpiar el singleton global)
           FilledButton.icon(
             onPressed: () {
               ref.read(loginProvider.notifier).reiniciarPartida();

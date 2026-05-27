@@ -20,15 +20,13 @@ class LogInProvider extends StateNotifier<ServerState> {
       .build());
 
     _socket.onConnect((_) {
-      print('¡Conectado al servidor de Bun!');
-   
+
       state = state.copyWith(isConnected: true);
       _socket.emit('GET_PARTIDA');
     });
 
     _socket.onDisconnect((_) {
-      print('Desconectado del servidor.');
-    
+
       state = ServerState(isConnected: false, partida: null);
     });
 
